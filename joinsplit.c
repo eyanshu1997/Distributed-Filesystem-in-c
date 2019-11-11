@@ -1,10 +1,17 @@
-#include <stdio.h>
+#include <stdio.h>     // for fprintf()
+#include <unistd.h>    // for close(), read()
+#include <sys/epoll.h> // for epoll_create1(), epoll_ctl(), struct epoll_event
+#include <string.h>    // for strncmp
+#include <sys/errno.h>
+#include<stdlib.h>
 int join(char *name,int times,int PSIZE)
 {
 	char PackData[1000]={'\0'};
-	sprintf(PackData,"%s%s","name",name);
+	sprintf(PackData,"%s%s","new",name);
 	FILE *f1 = fopen(PackData,"wb");
-    for(int i=0;i<times;i++)
+	FILE *f2;
+	int i;
+    for(i=0;i<times;i++)
     {
         bzero(PackData,1000);
         sprintf(PackData,"%d%s",i,name);
@@ -17,6 +24,9 @@ int join(char *name,int times,int PSIZE)
         }
 
         fclose(f2);
+		char cmd[1010]={'\0'};
+		sprintf(cmd,"rm %s",PackData);
+		system(cmd);
     }
 
         bzero(PackData,1000);
@@ -27,11 +37,14 @@ int join(char *name,int times,int PSIZE)
             fputc(fgetc(f2),f1);
         }
         fclose(f2);
+		char cmd[1010]={'\0'};
+		sprintf(cmd,"rm %s",PackData);
+		system(cmd);
         fclose(f1);
 
 
 }
-int split(char name,int times,int PSIZE)
+int split(char *name,int times,int PSIZE)
 {
 	
     FILE *fp = fopen(name,"rb");
@@ -61,13 +74,15 @@ int split(char name,int times,int PSIZE)
 }
 int main()
 {
-	 char *name = "1.mp3";
+	 char *name = "test.mp3";
 	 FILE *fp = fopen(name,"rb");
 	 int PSIZE = 10000;
 	 fseek(fp,0,SEEK_END);
     long k =ftell(fp);
+
     fclose(fp);
     int times = k/PSIZE;
+	printf("size %ld\n%d ",k,times);
 	split(name,times,PSIZE);
 	join(name,times,PSIZE);
 	
