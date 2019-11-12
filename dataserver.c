@@ -7,7 +7,7 @@
 #include <netinet/in.h>
 #include<fcntl.h>
 #include <arpa/inet.h>
-#define MAX 1048576
+#define MAX 100000
 int convertToInt(char*);
 int main(int argc, char *argv[])
 {
@@ -163,18 +163,26 @@ int main(int argc, char *argv[])
 							}
 							printf("buffer [%s] file name %s \n",buf,name);
 							send(i,"done",sizeof("done"),0);
-							bzero(buf,MAX);
-							int n=recv(i,buf,sizeof(buf),0);
-							buf[n]='\0';
 							int fp=open(name,O_RDWR|O_CREAT,0666);
 							if(fp<0)
 							{
 								printf("eroornopening file\n");
 							}
-							// bzero(result,MAX);
-							printf("result recieved[%s]\n",buf);
-							printf("n is %ld\n",strlen(buf));
-							write(fp,buf,strlen(buf));
+							bzero(buf,MAX);
+							int n=recv(i,buf,sizeof(buf),0);
+							int nooftime=atoi(buf);
+							printf("no of times:[%d]\n",nooftime);
+							for(int i=0;i<nooftime;i++)
+							{
+								send(i,"done",sizeof("done"),0);
+								bzero(buf,MAX);
+								n=recv(i,buf,sizeof(buf),0);
+								buf[n]='\0';
+								// bzero(result,MAX);
+								printf("result recieved[%s]\n",buf);
+								printf("n is %ld\n",strlen(buf));
+								write(fp,buf,strlen(buf));
+							}
 							bzero(buf,MAX);
 							// bzero(result,MAX);
 							strcat(buf,"succesffull\n");

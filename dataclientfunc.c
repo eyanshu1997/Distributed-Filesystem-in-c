@@ -7,7 +7,7 @@
 #include <netinet/in.h>
 #include<fcntl.h>
  #include <arpa/inet.h>
- #define MAX 10000
+ #define MAX 100000
  int dclient(int port,char *buf)
  {
 	char buffer[MAX]={'\0'};
@@ -72,22 +72,38 @@
 		bzero(buffer,MAX);
 		recv(sock,buffer,sizeof(buffer),0);
 		printf("file name %s \n",name);
-		bzero(buffer,MAX);
-		j=0;
-		while(!feof(fp))
+		fseek(fp,0,SEEK_END);
+		int len = ftell(fp);
+		fseek(fp,0,SEEK_SET);
+		int nooftimes=len/1000;
+		printf("no of times%d\n",nooftimes);
+		char x[1000];
+		sprintf(x,"%d",nooftimes);
+		send(sock,x,strlen(x),0);
+		for(i=0;i<nooftimes;i++)
 		{
-			buffer[j++]=fgetc(fp);
-			printf("%d : [%c]\n",j-1,buffer[j-1]);
+			
+			
+			bzero(buffer,MAX);
+			recv(sock,buffer,sizeof(buffer),0);
+			bzero(buffer,MAX);
+			j=0;
+			while(j<1000)
+			{
+				buffer[j++]=fgetc(fp);
+				printf("%d : [%c]\n",j-1,buffer[j-1]);
+			}
+			buffer[j]='\0';
+			printf("file : [%s]\n",buffer);
+			send(sock,buffer,j+1,0);
+			bzero(buffer,MAX);
 		}
-		buffer[j-1]='\0';
-		printf("file : [%s]\n",buffer);
-		send(sock,buffer,sizeof(buffer),0);
-		bzero(buffer,MAX);
 		fclose(fp);
+		recv(sock,buf,MAX,0);
 	}    
 }
 int main(int argc,char *argv[])
 {
-	return dclient(atoi(argv[1]),"write a.txt\0");
+	return dclient(atoi(argv[1]),"write 1test.mp3\0");
 	
 }
