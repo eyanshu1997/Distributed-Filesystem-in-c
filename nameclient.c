@@ -25,69 +25,45 @@ int main(int argc, char const *argv[])
 	portNo=5001;
 	int sock = 0, valread; 
 	struct sockaddr_in serv_addr; 
-    int maxfd1=1;
+    int maxfd1;
     fd_set rset;
     FD_ZERO(&rset);
-	int i=0,count=0;
+	 
+	if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) 
+	{ 
+		printf("\n Socket creation error \n"); 
+		return -1; 
+	} 
+
+	serv_addr.sin_family = AF_INET; 
+    serv_addr.sin_addr.s_addr = inet_addr("127.0.0.2");
+	serv_addr.sin_port = htons(atoi(argv[1])); 
+	
+	
+   
+	if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) 
+	{ 
+		printf("\nConnection Failed \n"); 
+		return -1; 
+	}
+    maxfd1 = max(0,sock)+1;
+    int count=0,i;
     while (1)
     { 
         FD_SET(0,&rset);
-        printf("Enter Something\n");
+        FD_SET(sock,&rset);
+        printf(">");
+		fflush(stdout);
         select(maxfd1,&rset,NULL,NULL,NULL);
-        if(FD_ISSET(0,&rset))
-		{
+        if(FD_ISSET(0,&rset)){
+            bzero(buffer,MAX);
             fgets(buffer,sizeof(buffer),stdin);
             fflush(stdin);
 		    buffer[strlen((buffer))]  = '\0';
-			if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) 
-			{ 
-				printf("\n Socket creation error \n"); 
-				return -1; 
-			} 
-
-			serv_addr.sin_family = AF_INET; 
-			serv_addr.sin_addr.s_addr = inet_addr("127.0.0.2");
-			serv_addr.sin_port = htons(atoi(argv[1])); 
-			
-			
-		   
-			if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) 
-			{ 
-				printf("\nConnection Failed \n"); 
-				return -1; 
-			}
-			maxfd1 = max(0,sock)+1;
             write(sock,buffer,strlen(buffer)-1);
-			FD_SET(sock,&rset);
             
         }
-        if(FD_ISSET(sock,&rset))
-		{
-			if(strncmp(buffer,"write",5)==0)
-			{
-				char name[100]={'\0'};
-				int i=0,j=0;
-				while(buffer[i]!=' ')
-				{
-					i++;
-				}
-				i++;
-				while(buffer[i])
-				{
-					name[j++]-=buffer[i++];
-				}
-				bzero(buffer,MAX);
-				recv(sock,buffer,sizeof(buffer),0);
-				bzero(buffer,MAX);
-				FILE *fp=fopen(name,"rb");
-				j=0;
-				while(!feof(fp))
-				{
-					buffer[j++]=fgetc(fp);
-				}
-				send(sock,buffer,sizeof(buffer),0);
-				bzero(buffer,MAX);
-			}
+        if(FD_ISSET(sock,&rset)){
 			bzero(buffer,MAX);
             valread = read(sock,buffer,sizeof(buffer));
             if(valread==0){
@@ -97,15 +73,13 @@ int main(int argc, char const *argv[])
                 break;
             }
             buffer[valread] = '\0';
-
-            printf("Server Response : %s\n",buffer);
-			if(strcmp(buffer,"exit")==0)
-			{
-				close(sock);
-				FD_CLR(i, &rset);
-				// exit(0);
-			}
+            printf("%s",buffer);
         }
+       
+        
+        
+		
+
     }
     
 
