@@ -7,7 +7,7 @@
 #include <netinet/in.h>
 #include<fcntl.h>
 #include <arpa/inet.h>
-#define MAX 10000
+#define MAX 1048576
 int convertToInt(char*);
 int main(int argc, char *argv[])
 {
@@ -139,7 +139,8 @@ int main(int argc, char *argv[])
 					}
 					else if(bytes_read<0){
 						perror("error while receiving");
-						exit(1);
+						// exit(1);
+						continue;
 					}
 					else
 					{
@@ -172,7 +173,8 @@ int main(int argc, char *argv[])
 							}
 							// bzero(result,MAX);
 							printf("result recieved[%s]\n",buf);
-							write(fp,buf,sizeof(buf));
+							printf("n is %ld\n",strlen(buf));
+							write(fp,buf,strlen(buf));
 							bzero(buf,MAX);
 							// bzero(result,MAX);
 							strcat(buf,"succesffull\n");
