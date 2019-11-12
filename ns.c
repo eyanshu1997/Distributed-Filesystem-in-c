@@ -305,7 +305,7 @@ dirnode *createroot()
 	root->ndir=0;
 	root->nfile=0;
 	bzero(root->path,100);
-	strcpy(root->path,"");
+	strcpy(root->path,"~");
 	strcpy(root->name,"~");
 	return root;
 }
@@ -541,8 +541,10 @@ int main()
 	// printd(temp);
 	temp=adddir(root,"second");
 	dirnode *first =getdir(root,"first");
+
 	temp=adddir(first,"ifirst");
 	temp=adddir(temp,"sfirst");
+
 	copydir(root,"first/ifirst","second");											
 	copyfile(root,"file1","first");
 	copyfile(root,"file1","first/ifirst/sfirst");
