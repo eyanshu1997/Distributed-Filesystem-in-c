@@ -123,9 +123,9 @@ int main(int argc, char *argv[])
 				else
 
 				{
-
+					bzero(buf,MAX);	
 					bytes_read = recv(i, buf, sizeof(buf), 0);
-
+					printf("command recieved %s\n",buf);
 				   //client has closed the connection
 					if(bytes_read == 0)
 
@@ -152,15 +152,26 @@ int main(int argc, char *argv[])
 								k++;
 							}
 							k++;
+							name[0]='n';
+							name[1]='e';
+							name[2]='w';
+							j=3;
 							while(buf[k])
 							{
-								name[j++]-=buf[k++];
+								name[j++]=buf[k++];
 							}
+							printf("buffer [%s] file name %s \n",buf,name);
 							send(i,"done",sizeof("done"),0);
 							bzero(buf,MAX);
-							recv(i,buf,sizeof(buf),0);
-							int fp=open(name,0777);
+							int n=recv(i,buf,sizeof(buf),0);
+							buf[n]='\0';
+							int fp=open(name,O_RDWR|O_CREAT,0666);
+							if(fp<0)
+							{
+								printf("eroornopening file\n");
+							}
 							// bzero(result,MAX);
+							printf("result recieved[%s]\n",buf);
 							write(fp,buf,sizeof(buf));
 							bzero(buf,MAX);
 							// bzero(result,MAX);

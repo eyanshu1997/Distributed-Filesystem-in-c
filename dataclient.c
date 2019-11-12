@@ -38,33 +38,12 @@ int main(int argc, char const *argv[])
 		{
             fgets(buffer,sizeof(buffer),stdin);
             fflush(stdin);
-		    buffer[strlen((buffer))]  = '\0';
-			if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) 
-			{ 
-				printf("\n Socket creation error \n"); 
-				return -1; 
-			} 
-
-			serv_addr.sin_family = AF_INET; 
-			serv_addr.sin_addr.s_addr = inet_addr("127.0.0.2");
-			serv_addr.sin_port = htons(atoi(argv[1])); 
-			
-			
-		   
-			if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) 
-			{ 
-				printf("\nConnection Failed \n"); 
-				return -1; 
-			}
-			maxfd1 = max(0,sock)+1;
-            write(sock,buffer,strlen(buffer)-1);
-			FD_SET(sock,&rset);
-            
-        }
-        if(FD_ISSET(sock,&rset))
-		{
+			if(buffer[strlen((buffer))-1]  == '\n')
+		    buffer[strlen((buffer))-1]  = '\0';
+		    // buffer[strlen((buffer))]  = '\0';
 			if(strncmp(buffer,"write",5)==0)
 			{
+				printf("1buffer %s \n",buffer);
 				char name[100]={'\0'};
 				int i=0,j=0;
 				while(buffer[i]!=' ')
@@ -72,19 +51,111 @@ int main(int argc, char const *argv[])
 					i++;
 				}
 				i++;
+				if(!buffer[i])
+				{
+					printf("error\n");
+					exit(0);
+				}
 				while(buffer[i])
 				{
-					name[j++]-=buffer[i++];
+					name[j++]=buffer[i++];
+				}
+				// bzero(buffer,MAX);
+				// recv(sock,buffer,sizeof(buffer),0);
+				printf("1buffer [%s] file name [%s] \n",buffer,name);
+				// bzero(buffer,MAX);
+				FILE *fp=fopen(name,"rb");
+				if(fp==NULL)
+				{
+					printf("no file found\n");
+					continue;	
+				}
+				else
+				{
+					if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) 
+					{ 
+						printf("\n Socket creation error \n"); 
+						return -1; 
+					} 
+
+					serv_addr.sin_family = AF_INET; 
+					serv_addr.sin_addr.s_addr = inet_addr("127.0.0.2");
+					serv_addr.sin_port = htons(atoi(argv[1])); 
+					
+					
+				   
+					if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) 
+					{ 
+						printf("\nConnection Failed \n"); 
+						return -1; 
+					}
+					maxfd1 = max(0,sock)+1;\
+									printf("command sent [%s]\n",buffer);
+					write(sock,buffer,strlen(buffer));
+					FD_SET(sock,&rset);
+				}
+				fclose(fp);
+			}
+			else
+			{
+				if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) 
+				{ 
+					printf("\n Socket creation error \n"); 
+					return -1; 
+				} 
+
+				serv_addr.sin_family = AF_INET; 
+				serv_addr.sin_addr.s_addr = inet_addr("127.0.0.2");
+				serv_addr.sin_port = htons(atoi(argv[1])); 
+				
+				
+			   
+				if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) 
+				{ 
+					printf("\nConnection Failed \n"); 
+					return -1; 
+				}
+				maxfd1 = max(0,sock)+1;
+
+				write(sock,buffer,strlen(buffer));
+				FD_SET(sock,&rset);
+			}
+            	
+        }
+        if(FD_ISSET(sock,&rset))
+		{
+			if(strncmp(buffer,"write",5)==0)
+			{
+				printf("buffer %s \n",buffer);
+				char name[100]={'\0'};
+				int i=0,j=0;
+				while(buffer[i]!=' ')
+				{
+					i++;
+				}
+				i++;
+				if(!buffer[i])
+				{
+					printf("error\n");
+					exit(0);
+				}
+				while(buffer[i])
+				{
+					name[j++]=buffer[i++];
 				}
 				bzero(buffer,MAX);
 				recv(sock,buffer,sizeof(buffer),0);
+				printf("file name %s \n",name);
 				bzero(buffer,MAX);
 				FILE *fp=fopen(name,"rb");
 				j=0;
 				while(!feof(fp))
 				{
 					buffer[j++]=fgetc(fp);
+					printf("%d : [%c]\n",j-1,buffer[j-1]);
 				}
+				buffer[j-1]='\0';
+				printf("file : [%s]\n",buffer);
 				send(sock,buffer,sizeof(buffer),0);
 				bzero(buffer,MAX);
 			}
