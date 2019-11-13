@@ -75,18 +75,33 @@
 		bzero(buffer,MAX);
 		recv(sock,buffer,sizeof(buffer),0);
 		printf("file name %s \n",name);
-		bzero(buffer,MAX);
-		j=0;
-		while(!feof(fp))
+		fseek(fp,0,SEEK_END);
+		int len = ftell(fp);
+		fseek(fp,0,SEEK_SET);
+		// int nooftimes=len/1000;
+		printf("no of times%d\n",len);
+		char x[1000];
+		sprintf(x,"%d",len);
+		send(sock,x,strlen(x),0);
+		while(len--)
 		{
-			buffer[j++]=fgetc(fp);
-			// printf("%d : [%c]\n",j-1,buffer[j-1]);
+			bzero(buffer,MAX);
+			recv(sock,buffer,sizeof(buffer),0);
+			bzero(buffer,sizeof(buffer));
+			if(len<100||len%10000==0)
+			printf("written %d\n",len);
+			unsigned char a='\0';
+			j=0;
+			a=fgetc(fp);
+			send(sock,&a,sizeof(a),0);
+									
 		}
-		buffer[j-1]='\0';
-		printf("file : [%s]\n",buffer);
-		send(sock,buffer,sizeof(buffer),0);
-		bzero(buffer,MAX);
 		fclose(fp);
+		bzero(buffer,MAX);
+		recv(sock,buf,MAX,0);
+		printf("reached here\n"			);
+		sleep(5);
+		close(sock);
 	}    
 }
 int split(char *name,int times,int PSIZE,int port)

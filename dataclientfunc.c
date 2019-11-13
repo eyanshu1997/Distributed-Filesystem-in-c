@@ -3,6 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include<fcntl.h>
@@ -15,7 +16,7 @@
 	int sock = 0, valread; 
 	struct sockaddr_in serv_addr; 
 	int count=0;
-	printf("Enter Something\n");
+	// printf("Enter Something\n");
 	if(buffer[strlen((buffer))-1]  == '\n')
 	buffer[strlen((buffer))-1]  = '\0';
 	// buffer[strlen((buffer))]  = '\0';
@@ -39,7 +40,7 @@
 	}
 	// bzero(buffer,MAX);
 	// recv(sock,buffer,sizeof(buffer),0);
-	printf("1buffer [%s] file name [%s] \n",buffer,name);
+	// printf("1buffer [%s] file name [%s] \n",buffer,name);
 	// bzero(buffer,MAX);
 	FILE *fp=fopen(name,"rb");
 	if(fp==NULL)
@@ -56,7 +57,7 @@
 		} 
 
 		serv_addr.sin_family = AF_INET; 
-		serv_addr.sin_addr.s_addr = inet_addr("127.0.0.2");
+		serv_addr.sin_addr.s_addr = inet_addr("127.0.0.10");
 		serv_addr.sin_port = htons(port); 
 		
 		
@@ -68,10 +69,10 @@
 		}
 		printf("command sent [%s]\n",buffer);
 		write(sock,buffer,strlen(buffer));
-		printf("buffer %s \n",buffer);
+		// printf("buffer %s \n",buffer);
 		bzero(buffer,MAX);
 		recv(sock,buffer,sizeof(buffer),0);
-		printf("file name %s \n",name);
+		// printf("file name %s \n",name);
 		fseek(fp,0,SEEK_END);
 		int len = ftell(fp);
 		fseek(fp,0,SEEK_SET);
@@ -80,29 +81,100 @@
 		char x[1000];
 		sprintf(x,"%d",len);
 		send(sock,x,strlen(x),0);
-		while(len--)
+		// printf("sedinfig");
+		while(len
+		--)
 		{
 			bzero(buffer,MAX);
-			recv(sock,buffer,sizeof(buffer),0);
+			recv(sock,buffer,4,0);
 			bzero(buffer,sizeof(buffer));
-			if(len<100||len%10000==0)
-			printf("written %d\n",len);
+			// if(len%10000==0)
+			// printf(".");
+			fflush(stdout);
 			unsigned char a='\0';
 			j=0;
 			a=fgetc(fp);
 			send(sock,&a,sizeof(a),0);
 									
 		}
+		printf("\n");
 		fclose(fp);
+		char cmd[1010]={'\0'};
+		sprintf(cmd,"rm %s",name);
+		system(cmd);
 		bzero(buffer,MAX);
 		recv(sock,buf,MAX,0);
-		printf("reached here\n"			);
-		sleep(5);
+		printf("reached here\n");
+		sleep(1);
 		close(sock);
+		exit(0);
 	}    
+}
+int split(char *name,int times,int PSIZE)
+{
+	
+    FILE *fp = fopen(name,"rb");
+    fseek(fp,0,SEEK_END);
+	int len = ftell(fp);
+    fseek(fp,0,SEEK_SET);
+    char PackData[1000]={'\0'};
+    bzero(PackData,1000);
+    int i=0;
+        int si = PSIZE;
+    for(i=0;i<times;i++)
+    {   
+        bzero(PackData,1000);
+        sprintf(PackData,"%d%s",i,name);
+        FILE *f2 = fopen(PackData,"wb");
+        si = PSIZE;
+        while(si--)
+            fputc(fgetc(fp),f2);
+        fclose(f2);
+    }
+	if(len%PSIZE!=0)
+	{
+		bzero(PackData,1000);
+		sprintf(PackData,"%d%s",i,name);
+		FILE *f2 = fopen(PackData,"wb");
+		si= len%PSIZE;
+			while(si--)
+				fputc(fgetc(fp),f2);
+		fclose(f2);
+	}
+    fclose(fp);
+
 }
 int main(int argc,char *argv[])
 {
-	return dclient(atoi(argv[1]),"write 1test.mp3\0");
-	
+	 FILE *fp = fopen(argv[2],"rb");
+	 int PSIZE = 1048576;
+	 fseek(fp,0,SEEK_END);
+    long k =ftell(fp);
+
+    fclose(fp);
+    int times = k/PSIZE;
+	printf("size %ld\ntimes:%d\n ",k,times);
+	split(argv[2],times,PSIZE);
+	printf("size %ld\nntimes:%d \n",k,times);
+	if(k%PSIZE!=0)
+	{
+		times=times+1;
+	}
+	for(int i=0;i<times;i++)
+	{
+		int ret=fork();
+		if(ret==0)
+		{
+			char cmd[1000];
+			sprintf(cmd,"write %d%s",i,argv[2]);
+			dclient(atoi(argv[1]),cmd);
+			printf("child %d closed\n",i);
+			exit(0);
+		}
+		
+	}
+	for(int i=0;i<times;i++)
+	wait(NULL);
+	// exit(0);
+	return 0;
 }

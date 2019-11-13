@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
 
 	while(1)
 	{
-		printf("reached here\n");
+		// printf("reached here\n");
 		read_fds = master;
 		if(select(maxfd1, &read_fds, NULL, NULL, NULL) == -1)
 		{
@@ -122,11 +122,10 @@ int main(int argc, char *argv[])
 				}
 
 				else
-
 				{
 					bzero(buf,MAX);	
 					bytes_read = recv(i, buf, sizeof(buf), 0);
-					printf("command recieved %s\n",buf);
+					printf("command recieved %s from %d\n",buf,i);
 				   //client has closed the connection
 					if(bytes_read == 0)
 
@@ -171,22 +170,34 @@ int main(int argc, char *argv[])
 								if(fp<0)
 								{
 									printf("eroornopening file\n");
+									bzero(buf,MAX);
+									strcat(buf,"file error\n");
+									if(send(i, buf, MAX, 0) == -1)
+										perror("Error Sending Data");
+									continue;
 								}
 								bzero(buf,MAX);
 								int n=recv(i,buf,sizeof(buf),0);
 								int nooftime=atoi(buf);
 								printf("no of times:[%d]\n",nooftime);
+								// printf("sending");
+								int no=0;
 								while(nooftime--)
 								{
 									unsigned char a='\0';
-									send(i,"done",sizeof("done"),0);
-									if(nooftime<100||nooftime%10000==0)
-									printf("written %id \n",nooftime);
+									send(i,"done",4,0);
+									// if(nooftime%10000==0)
+									// printf(".");
+									fflush(stdout);
 									n=recv(i,&a,sizeof(a),0);
 									// printf("result recieved[%s]\n",buf);
 									// printf("n is %ld\n",strlen(buf));
 									fputc(a,fp);
+									no=n+no;
 								}
+								fclose(fp);
+								printf("n %d",no);
+								printf("\n");
 								bzero(buf,MAX);
 								// bzero(result,MAX);
 								strcat(buf,"succesffull\n");
@@ -200,10 +211,12 @@ int main(int argc, char *argv[])
 								close(i);
 								//clearing the fd from masterset
 								FD_CLR(i, &master);
+								maxfd1=maxfd1-1;
 							}
 						}
 						else
 						{
+							
 							bzero(buf,MAX);
 							strcat(buf,"no command\n");
 							if(send(i, buf, MAX, 0) == -1)
