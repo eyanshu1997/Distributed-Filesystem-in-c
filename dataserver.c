@@ -78,6 +78,7 @@ int main(int argc, char *argv[])
 
 	while(1)
 	{
+		printf("reached here\n");
 		read_fds = master;
 		if(select(maxfd1, &read_fds, NULL, NULL, NULL) == -1)
 		{
@@ -146,62 +147,74 @@ int main(int argc, char *argv[])
 					{
 						if(strncmp(buf,"write",5)==0)
 						{
-							char name[100]={'\0'};
-							int k=0,j=0;
-							while(buf[k]!=' ')
+							int ret=fork();
+							if(ret==0)
 							{
+								char name[100]={'\0'};
+								int k=0,j=0;
+								while(buf[k]!=' ')
+								{
+									k++;
+								}
 								k++;
-							}
-							k++;
-							name[0]='n';
-							name[1]='e';
-							name[2]='w';
-							j=3;
-							while(buf[k])
-							{
-								name[j++]=buf[k++];
-							}
-							printf("buffer [%s] file name %s \n",buf,name);
-							send(i,"done",sizeof("done"),0);
-							int fp=open(name,O_RDWR|O_CREAT,0666);
-							if(fp<0)
-							{
-								printf("eroornopening file\n");
-							}
-							bzero(buf,MAX);
-							int n=recv(i,buf,sizeof(buf),0);
-							int nooftime=atoi(buf);
-							printf("no of times:[%d]\n",nooftime);
-							for(int i=0;i<nooftime;i++)
-							{
+								name[0]='n';
+								name[1]='e';
+								name[2]='w';
+								j=3;
+								while(buf[k])
+								{
+									name[j++]=buf[k++];
+								}
+								printf("buffer [%s] file name %s \n",buf,name);
 								send(i,"done",sizeof("done"),0);
+								FILE *fp=fopen(name,"wb");
+								if(fp<0)
+								{
+									printf("eroornopening file\n");
+								}
 								bzero(buf,MAX);
-								n=recv(i,buf,sizeof(buf),0);
-								buf[n]='\0';
+								int n=recv(i,buf,sizeof(buf),0);
+								int nooftime=atoi(buf);
+								printf("no of times:[%d]\n",nooftime);
+								while(nooftime--)
+								{
+									unsigned char a='\0';
+									send(i,"done",sizeof("done"),0);
+									if(nooftime<100||nooftime%10000==0)
+									printf("written %id \n",nooftime);
+									n=recv(i,&a,sizeof(a),0);
+									// printf("result recieved[%s]\n",buf);
+									// printf("n is %ld\n",strlen(buf));
+									fputc(a,fp);
+								}
+								bzero(buf,MAX);
 								// bzero(result,MAX);
-								printf("result recieved[%s]\n",buf);
-								printf("n is %ld\n",strlen(buf));
-								write(fp,buf,strlen(buf));
+								strcat(buf,"succesffull\n");
+								if(send(i, buf, MAX, 0) == -1)
+									perror("Error Sending Data");
 							}
-							bzero(buf,MAX);
-							// bzero(result,MAX);
-							strcat(buf,"succesffull\n");
+							else
+							{
+								
+								// printf("Client on Socket No %d has closed the connection\n", i);
+								close(i);
+								//clearing the fd from masterset
+								FD_CLR(i, &master);
+							}
 						}
 						else
 						{
 							bzero(buf,MAX);
 							strcat(buf,"no command\n");
+							if(send(i, buf, MAX, 0) == -1)
+										perror("Error Sending Data");
 						}
-						if(send(i, buf, MAX, 0) == -1)
-							perror("Error Sending Data");
+
 					}
-
 				}
-
 			}
 
 		}
-
 	}
 
 	return 0;

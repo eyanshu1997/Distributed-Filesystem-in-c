@@ -85,7 +85,7 @@ int main()
 {
 	 char *name = "test.mp3";
 	 FILE *fp = fopen(name,"rb");
-	 int PSIZE = 100000;
+	 int PSIZE = 1048576;
 	 fseek(fp,0,SEEK_END);
     long k =ftell(fp);
 
