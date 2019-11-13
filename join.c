@@ -8,15 +8,16 @@ int join(char *name,int times,int PSIZE,int l)
 {
 	printf("hello\n");
 	char PackData[1000]={'\0'};
-	sprintf(PackData,"%s%s","new",name);
+	char PackData[1000]={'\0'};
+	sprintf(PackData,"%s%s","saved",name);
 	FILE *f1 = fopen(PackData,"wb");
 	FILE *f2;
 	int i=0;
     for(i=0;i<times;i++)
     {
         bzero(PackData,1000);
-        sprintf(PackData,"new%d%s",i,name);
-        printf("using new%d%s\n",i,name);
+        sprintf(PackData,"%d%s",i,name);
+        printf("using %d%s\n",i,name);
         f2 = fopen(PackData,"rb");
         int k=PSIZE,l=0;
         while(k--)
@@ -33,8 +34,8 @@ int join(char *name,int times,int PSIZE,int l)
 	if(l%PSIZE!=0)
 	{
         bzero(PackData,1000);
-        sprintf(PackData,"new%d%s",i,name);
-        printf(	"new%d%s\n",i,name);
+        sprintf(PackData,"%d%s",i,name);
+        printf(	"%d%s\n",i,name);
         f2 = fopen(PackData,"rb");
 		    fseek(f2,0,SEEK_END);
 	

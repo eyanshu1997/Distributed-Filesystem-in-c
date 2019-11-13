@@ -216,11 +216,86 @@ int main(int argc, char *argv[])
 						}
 						else
 						{
-							
+							if(strncmp(buf,"read",4)==0)
+							{
+								int ret=fork();
+								if(ret==0)
+								{
+									char name[100]={'\0'};
+									int k=0,j=0;
+									while(buf[k]!=' ')
+									{
+										k++;
+									}
+									k++;
+									name[0]='n';
+									name[1]='e';
+									name[2]='w';
+									j=3;
+									while(buf[k])
+									{
+										name[j++]=buf[k++];
+									}
+									printf("buffer [%s] file name %s \n",buf,name);
+
+									FILE *fp=fopen(name,"rb");
+									if(fp<0)
+									{
+										printf("eroornopening file\n");
+										bzero(buf,MAX);
+										strcat(buf,"file error\n");
+										if(send(i, buf, MAX, 0) == -1)
+											perror("Error Sending Data");
+										continue;
+									}
+									fseek(fp,0,SEEK_END);
+									int len = ftell(fp);
+									fseek(fp,0,SEEK_SET);
+									// int nooftimes=len/1000;
+									printf("no of times%d\n",len);
+									char x[1000];
+									sprintf(x,"%d",len);
+									send(i,x,sizeof(x),0);
+									bzero(buf,MAX);
+									int n=recv(i,buf,sizeof(buf),0);
+									// printf("sending");
+									int no=0;
+									while(len--)
+									{
+										unsigned char a='\0';
+										j=0;
+										a=fgetc(fp);
+										send(i,&a,sizeof(a),0);
+										bzero(buf,MAX);
+										recv(i,buf,4,0);
+										bzero(buf,sizeof(buf));
+									}
+									fclose(fp);
+									// char cmd[1010]={'\0'};
+									// sprintf(cmd,"rm %s",name);
+									// system(cmd);
+									printf("n %d",no);
+									printf("\n");
+									bzero(buf,MAX);
+									// bzero(result,MAX);
+									strcat(buf,"succesffull\n");
+									if(send(i, buf, MAX, 0) == -1)
+										perror("221Error Sending Data");
+								}
+								else
+								{
+									
+									// printf("Client on Socket No %d has closed the connection\n", i);
+									close(i);
+									//clearing the fd from masterset
+									FD_CLR(i, &master);
+									maxfd1=maxfd1-1;
+								}
+							}
 							bzero(buf,MAX);
 							strcat(buf,"no command\n");
 							if(send(i, buf, MAX, 0) == -1)
-										perror("Error Sending Data");
+										perror("2121Error Sending Data");
 						}
 
 					}
