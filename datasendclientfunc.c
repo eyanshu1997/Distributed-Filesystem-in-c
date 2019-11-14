@@ -9,7 +9,7 @@
 #include<fcntl.h>
  #include <arpa/inet.h>
  #define MAX 100000
- int dclient(int port,char *buf)
+ int dsclient(char *ip,int port,char *buf)
  {
 	char buffer[MAX]={'\0'};
 	strcpy(buffer,buf);
@@ -57,7 +57,7 @@
 		} 
 
 		serv_addr.sin_family = AF_INET; 
-		serv_addr.sin_addr.s_addr = inet_addr("127.0.0.10");
+		serv_addr.sin_addr.s_addr = inet_addr(ip);
 		serv_addr.sin_port = htons(port); 
 		
 		
@@ -144,17 +144,11 @@ int split(char *name,int times,int PSIZE)
     fclose(fp);
 
 }
-int main(int argc,char *argv[])
+int upload(long k,char *nam,int *port,char **ip,int PSIZE)
 {
-	 FILE *fp = fopen(argv[2],"rb");
-	 int PSIZE = 1048576;
-	 fseek(fp,0,SEEK_END);
-    long k =ftell(fp);
-
-    fclose(fp);
     int times = k/PSIZE;
 	printf("size %ld\ntimes:%d\n ",k,times);
-	split(argv[2],times,PSIZE);
+	split(nam,times,PSIZE);
 	printf("size %ld\nntimes:%d \n",k,times);
 	if(k%PSIZE!=0)
 	{
@@ -166,8 +160,8 @@ int main(int argc,char *argv[])
 		if(ret==0)
 		{
 			char cmd[1000];
-			sprintf(cmd,"write %d%s",i,argv[2]);
-			dclient(atoi(argv[1]),cmd);
+			sprintf(cmd,"write %d%s",i,nam);
+			dsclient(ip[i],port[i],cmd);
 			printf("child %d closed\n",i);
 			exit(0);
 		}
@@ -176,5 +170,39 @@ int main(int argc,char *argv[])
 	for(int i=0;i<times;i++)
 	wait(NULL);
 	// exit(0);
+	return 0;
+}
+int main(int argc,char *argv[])
+{
+	char nam[100];
+	strcpy(nam,argv[1]);
+	printf("name %s\n",nam);
+	FILE *fp = fopen(nam,"rb");
+	int PSIZE = 1048576;
+	fseek(fp,0,SEEK_END);
+    long k =ftell(fp);
+    fseek(fp,0,SEEK_SET);
+	fclose(fp);
+	printf("here");
+	char *ip[1000];
+	ip[0]="127.0.0.1";
+	ip[1]="127.0.0.1";
+	ip[2]="127.0.0.1";
+	ip[3]="127.0.0.1";
+	ip[4]="127.0.0.1";
+	printf("hello\n");
+	int port[1000];
+	port[0]=8080;
+	port[1]=8081;
+	port[2]=8082;
+	port[3]=8083;
+	port[4]=8084;
+	port[5]=8085;
+	// char *name[]={"node1","node2","node3","node4","node5"};
+	printf("reached here\n");
+	// upload(k,nam,name,port,ip,PSIZE);
+	upload(k,nam,port,ip,PSIZE);
+	// printf("k : %ld, nam %s, psize %d\n", k,nam,PSIZE);
+	
 	return 0;
 }

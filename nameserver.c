@@ -333,12 +333,15 @@ inode **createinode(long size,long segsize,long n)
 	}
 	return li;
 }
-filenode *addfile(dirnode *dir,char *name,long size,long segsize)
+filenode *addfile(dirnode *dir,char *nam,long size,long segsize)
 {
 	filenode *new = (filenode *)malloc(sizeof(filenode));
 	new->size=size;
 	new->noofcopies=0;
-	strcpy(new->name,name);
+
+	strcpy(new->name,nam);
+	printf("adding origi name [%s]\n",nam);
+	printf("adding name [%s]\n",new->name);
 	long n;
 	if(size%segsize==0)
 		n=size/segsize;
@@ -348,6 +351,7 @@ filenode *addfile(dirnode *dir,char *name,long size,long segsize)
 	new->inodes= createinode(size,segsize,n);
 	dir->flist[dir->nfile]=new;
 	(dir->nfile)++;
+	printf("no of nodes %ld\n",n);
 	return new;
 }
 
@@ -608,6 +612,58 @@ void getresult(char *buf,char *path,char *result)
 		// printf("
 		ls(cur,result);
 		// printf("inside %s\n",result);
+		return ;																		
+	}
+	if(strncmp(buf,"upload",2)==0)
+	{
+		// printf("
+		// ls(cur,result);
+		char name[MAX]={'\0'};
+		long siz;
+		char upload[1000];
+		sscanf(buf,"%s %s %ld",upload,name,&siz);
+		// char 
+		// int i=0;
+		// while(buf[i]!=' ')
+			// i++;
+		// i++;
+		// int j=0;
+		// if(!buf[i])
+		// {				
+			// bzero(result,MAX);
+			// strcat(result,"wrong command\n");
+			// return ;
+		// }
+		// while(buf[i]!=' ')
+		// {
+			// name[j++]=buf[i++];
+		// }
+		// i++;
+		// printf("name is %s\n",name);
+		// char size[100]={'\0'};
+		// j=0;
+		// while(buf[i]!=' ')
+		// {
+			// size[j++]=buf[i++];
+		// }
+		
+		// long siz;
+		// char *ptr;
+		// siz = strtol(size, &ptr, 10);
+		printf("size is%ld\n",siz);
+		// char nam[10000]={'\0'};
+		// strcat(nam,name);
+		// printf("nam is %s\n",nam);
+		printf("name is %s\n",name);
+		// filenode *f=addfile(cur,nam,siz,1048576);
+		filenode *f=addfile(cur,name,siz,1048576);
+		printf("created file\n");
+		printfile(f);
+		// printf("inside %s\n",result);
+		bzero(result,MAX);
+		strcat(result,"suc\n");
+		printf("returning\n");
+		// return ;
 		return ;																		
 	}
 	if(strncmp(buf,"mkdir",5)==0)
@@ -893,7 +949,9 @@ int main(int argc, char *argv[])
 						printf("current directory for the client %s \n",path[i]);
 						// char *result="hello from server";
 						char result[MAX]={'\0'};
+						printf("hello\n");
 						getresult(buf,path[i],result);
+						printf("hello\n");
 						printf("result:%s\n",result);			
 						// printf("result:\n");			
 						// for(int i=0;result[i];i++)
