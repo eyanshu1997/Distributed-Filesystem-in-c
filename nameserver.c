@@ -117,7 +117,7 @@ void printd(dirnode *dir)
 void printinode(filenode *file,char *result)
 {
 	char x[10]={'\0'};
-	sprintf(x,"%ld",file->ninodes);
+	sprintf(x,"%ld %ld",file->ninodes,file->size);
 	strcat(result,x);
 	// strcat(result,"|");
 	char y[MAX]={'\0'};
@@ -690,6 +690,49 @@ void getresult(char *buf,char *path,char *result)
 		// return ;
 		return ;																		
 	}
+	if(strncmp(buf,"download",8)==0)
+	{
+		// printf("
+		// ls(cur,result);
+		char name[MAX]={'\0'};
+		char upload[1000];
+		sscanf(buf,"%s %s",upload,name);
+
+		printf("name is %s\n",name);
+		filenode *f=getfile(root,name);
+		printf("created file\n");
+		printfile(f);
+	
+		// printf("inside %s\n",result);
+		bzero(result,MAX);
+		// strcat(result,"suc\n");
+		printinode(f,result);
+		printf("returning\n");
+		// return ;
+		return ;																		
+	}
+	if(strncmp(buf,"rm",2)==0)
+	{
+		// printf("
+		// ls(cur,result);
+		char name[MAX]={'\0'};
+		char upload[1000];
+		sscanf(buf,"%s %s",upload,name);
+
+		printf("name is %s\n",name);
+		deletefile(root,name);
+		printf("created file\n");
+		// printfile(f);
+	
+		// printf("inside %s\n",result);
+		bzero(result,MAX);
+		strcat(result,"suc\n");
+		// printinode(f,result);
+		printf("returning\n");
+		// return ;
+		return ;																		
+	}
+	
 	if(strncmp(buf,"mkdir",5)==0)
 	{
 		// printf(

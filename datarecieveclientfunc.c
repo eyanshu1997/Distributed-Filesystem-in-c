@@ -10,7 +10,7 @@
  #include <arpa/inet.h>
  #include <sys/errno.h>
  #define MAX 100000
- int join(char *name,int times,int PSIZE,int l)
+ int join(char *name,int times,int PSIZE,int l,int *ino)
 {
 	printf("hello\n");
 	char PackData[1000]={'\0'};
@@ -21,8 +21,8 @@
     for(i=0;i<times;i++)
     {
         bzero(PackData,1000);
-        sprintf(PackData,"%d%s",i,name);
-        printf("using %d%s\n",i,name);
+        sprintf(PackData,"inode%d",ino[i]);
+        printf("using inode%d\n",ino[i]);
         f2 = fopen(PackData,"rb");
         int k=PSIZE,l=0;
         while(k--)
@@ -39,8 +39,8 @@
 	if(l%PSIZE!=0)
 	{
         bzero(PackData,1000);
-        sprintf(PackData,"%d%s",i,name);
-        printf(	"%d%s\n",i,name);
+        sprintf(PackData,"inode%d",ino[i]);
+        printf(	"inode%d\n",ino[i]);
         f2 = fopen(PackData,"rb");
 		    fseek(f2,0,SEEK_END);
 	
@@ -149,7 +149,7 @@
 		exit(0);
 	}    
 }
-int download(long k,char *nam,int *port,char **ip,int PSIZE)
+int download(long k,char *nam,int *port,char **ip,int PSIZE,int *ino)
 {
 
 
@@ -168,7 +168,7 @@ int download(long k,char *nam,int *port,char **ip,int PSIZE)
 		if(ret==0)
 		{
 			char cmd[1000];
-			sprintf(cmd,"read %d%s",i,nam);
+			sprintf(cmd,"read inode%d",ino[i]);
 			drclient(ip[i],port[i],cmd);
 			printf("child %d closed\n",i);
 			exit(0);
@@ -179,7 +179,7 @@ int download(long k,char *nam,int *port,char **ip,int PSIZE)
 	wait(NULL);
 	// exit(0);
 	printf("done recieveing merging\n");
-	join(nam,k/PSIZE,PSIZE,k);
+	// join(nam,k/PSIZE,PSIZE,k,ino);
 	return 0;
 }
 int main(int argc,char *argv[])
@@ -195,6 +195,14 @@ int main(int argc,char *argv[])
 	fclose(fp);
 	printf("here");
 	char *ip[1000];
+		int ino[1000];
+	ino[0]=0;
+	ino[1]=1;
+	ino[2]=2;
+	ino[3]=3;
+	ino[4]=4;
+	ino[5]=5;
+	
 	ip[0]="127.0.0.1";
 	ip[1]="127.0.0.1";
 	ip[2]="127.0.0.1";
@@ -205,14 +213,14 @@ int main(int argc,char *argv[])
 	port[0]=8080;
 	port[1]=8081;
 	port[2]=8082;
-	port[3]=8083;
-	port[4]=8084;
-	port[5]=8085;
+	port[3]=8080;
+	port[4]=8081;
+	port[5]=8082;
 	// char *name[]={"node1","node2","node3","node4","node5"};
 	printf("reached here\n");
 	// upload(k,nam,name,port,ip,PSIZE);
 	// upload(k,nam,port,ip,PSIZE);
-	download(k,nam,port,ip,PSIZE);
+	download(k,nam,port,ip,PSIZE,ino);
 	// printf("k : %ld, nam %s, psize %d\n", k,nam,PSIZE);
 	
 	return 0;
