@@ -12,6 +12,7 @@ typedef struct node1 filenode;
 typedef struct node2 dirnode;
 typedef struct node3 inode;
 dirnode *root;
+int inodecount=0;
 
 void printd(dirnode *dir);
 
@@ -44,11 +45,14 @@ int deletedir(dirnode *root,char*source); //deletedir from path
 int convertToInt(char*);
 
 int noofds=3;
+char *ip[1000];
+int port[1000];
 struct node3
 {
 	int dsno;   //data server no
 	int ino;      //file node no
 	long size;     //block size
+	int gino;
 };
 struct node1
 {
@@ -108,6 +112,23 @@ void printd(dirnode *dir)
 		printf("%d :%s \n",i,dir->flist[i]->name);
 	}
 	printf("---------------------------------\n");
+}
+
+void printinode(filenode *file,char *result)
+{
+	char x[10]={'\0'};
+	sprintf(x,"%ld",file->ninodes);
+	strcat(result,x);
+	// strcat(result,"|");
+	char y[MAX]={'\0'};
+	for(int i=0;i<file->ninodes;i++)
+	{
+		inode *in=file->inodes[i];
+		sprintf(y,"|%d %s %d",in->gino,ip[in->dsno],port[in->dsno]);
+		strcat (result,y);
+		// printf("dataserver no%d \n",in->dsno);
+	}
+	// printf("---------------------------------\n");
 }
 void printfile(filenode *file)
 {
@@ -325,6 +346,7 @@ inode **createinode(long size,long segsize,long n)
 		// printf("creating inode %d\n",i);
 		li[i]->dsno=i%noofds;
 		li[i]->ino=i;
+		li[i]->gino=inodecount++;
 		if(i!=n-1)
 			li[i]->size=segsize;
 		else
@@ -614,7 +636,7 @@ void getresult(char *buf,char *path,char *result)
 		// printf("inside %s\n",result);
 		return ;																		
 	}
-	if(strncmp(buf,"upload",2)==0)
+	if(strncmp(buf,"upload",6)==0)
 	{
 		// printf("
 		// ls(cur,result);
@@ -659,9 +681,11 @@ void getresult(char *buf,char *path,char *result)
 		filenode *f=addfile(cur,name,siz,1048576);
 		printf("created file\n");
 		printfile(f);
+	
 		// printf("inside %s\n",result);
 		bzero(result,MAX);
-		strcat(result,"suc\n");
+		// strcat(result,"suc\n");
+		printinode(f,result);
 		printf("returning\n");
 		// return ;
 		return ;																		
@@ -836,7 +860,12 @@ int main(int argc, char *argv[])
 	int bytes_read;
 	int addrlen = 5;
 	int i, j;
-
+	port[0]=8080;
+	port[1]=8081;
+	port[2]=8082;
+	ip[0]="127.0.0.1";
+	ip[1]="127.0.0.1";
+	ip[2]="127.0.0.1";
 	//clearing the master and read_fds set
 
 	FD_ZERO(&master);

@@ -82,8 +82,7 @@
 		sprintf(x,"%d",len);
 		send(sock,x,strlen(x),0);
 		// printf("sedinfig");
-		while(len
-		--)
+		while(len--)
 		{
 			bzero(buffer,MAX);
 			recv(sock,buffer,4,0);
@@ -110,7 +109,7 @@
 		exit(0);
 	}    
 }
-int split(char *name,int times,int PSIZE)
+int split(char *name,int times,int PSIZE,int *ino)
 {
 	
     FILE *fp = fopen(name,"rb");
@@ -124,7 +123,7 @@ int split(char *name,int times,int PSIZE)
     for(i=0;i<times;i++)
     {   
         bzero(PackData,1000);
-        sprintf(PackData,"%d%s",i,name);
+        sprintf(PackData,"inode%d",ino[i]);
         FILE *f2 = fopen(PackData,"wb");
         si = PSIZE;
         while(si--)
@@ -134,7 +133,7 @@ int split(char *name,int times,int PSIZE)
 	if(len%PSIZE!=0)
 	{
 		bzero(PackData,1000);
-		sprintf(PackData,"%d%s",i,name);
+		sprintf(PackData,"inode%d",ino[i]);
 		FILE *f2 = fopen(PackData,"wb");
 		si= len%PSIZE;
 			while(si--)
@@ -144,11 +143,11 @@ int split(char *name,int times,int PSIZE)
     fclose(fp);
 
 }
-int upload(long k,char *nam,int *port,char **ip,int PSIZE)
+int upload(long k,char *nam,int *port,char **ip,int PSIZE,int *ino)
 {
     int times = k/PSIZE;
 	printf("size %ld\ntimes:%d\n ",k,times);
-	split(nam,times,PSIZE);
+	split(nam,times,PSIZE,ino);
 	printf("size %ld\nntimes:%d \n",k,times);
 	if(k%PSIZE!=0)
 	{
@@ -160,7 +159,7 @@ int upload(long k,char *nam,int *port,char **ip,int PSIZE)
 		if(ret==0)
 		{
 			char cmd[1000];
-			sprintf(cmd,"write %d%s",i,nam);
+			sprintf(cmd,"write inode%d",ino[i]);
 			dsclient(ip[i],port[i],cmd);
 			printf("child %d closed\n",i);
 			exit(0);
@@ -184,6 +183,14 @@ int main(int argc,char *argv[])
     fseek(fp,0,SEEK_SET);
 	fclose(fp);
 	printf("here");
+	int ino[1000];
+	ino[0]=0;
+	ino[1]=1;
+	ino[2]=2;
+	ino[3]=3;
+	ino[4]=4;
+	ino[5]=5;
+	
 	char *ip[1000];
 	ip[0]="127.0.0.1";
 	ip[1]="127.0.0.1";
@@ -195,13 +202,13 @@ int main(int argc,char *argv[])
 	port[0]=8080;
 	port[1]=8081;
 	port[2]=8082;
-	port[3]=8083;
-	port[4]=8084;
-	port[5]=8085;
+	port[3]=8080;
+	port[4]=8081;
+	port[5]=8082;
 	// char *name[]={"node1","node2","node3","node4","node5"};
 	printf("reached here\n");
 	// upload(k,nam,name,port,ip,PSIZE);
-	upload(k,nam,port,ip,PSIZE);
+	upload(k,nam,port,ip,PSIZE,ino);
 	// printf("k : %ld, nam %s, psize %d\n", k,nam,PSIZE);
 	
 	return 0;
