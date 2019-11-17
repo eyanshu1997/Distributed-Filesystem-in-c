@@ -73,15 +73,16 @@ struct node2
 };
  void ls(dirnode *dir,char *result)
 {
+	printd(dir);
 	for(int i=0;i<MAX;i++)
 		result[i]='\0';
-	strcat(result,"\nthe name of directpry is");
+	strcat(result,"\nthe name of directpry is ");
 	strcat(result,dir->name);
-	strcat(result,"\nthe path of directpry is");
+	strcat(result,"\nthe path of directpry is ");
 	strcat(result,dir->path);
 	printf("dir name %s \n",dir->name);
 	if(dir->nfile==0&&dir->ndir==0)
-		strcat(result,"\nempty directory");			
+		strcat(result,"\nempty directory\n");			
 	for(int i=0;i<dir->ndir;i++)
 	{
 		strcat(result,"\n");
@@ -93,7 +94,7 @@ struct node2
 		strcat(result,dir->flist[i]->name);
 	}
 	strcat(result,"\n");
-	printf("result %s\n",result);
+	// printf("result %s\n",result);
 	// return result;
 }
 void printd(dirnode *dir)
@@ -315,6 +316,7 @@ filenode * getfile(dirnode *root,char *path)
 dirnode *adddir(dirnode *dir,char *name)
 {
 	// printf("helo\n");
+	printf("name %s \n",name);
 	dirnode *chk=findd(root,dir,name);
 	if(chk!=NULL)
 	{
@@ -458,14 +460,18 @@ int copyfile(dirnode *root,char *source,char *destination)
 	dest->flist[dest->nfile]=src;
 	(dest->nfile)++;
 	printf("------------\n%s copied succesfully to %s\nnofo copies %d \n-------\n",src->name,destination,src->noofcopies);
+	return 0;
 }
 
 
 int deletefile(dirnode *root,char*source)
 {
-	char *x=strchr(source,'/');
+	char *x=strrchr(source,'/');
+	// char *y;
+
 	char res[1000]={'\0'};
 	char t[1000]={'\0'};
+	printf("source is %s \n",source);
 	if(x!=NULL)
 	{
 	
@@ -475,17 +481,19 @@ int deletefile(dirnode *root,char*source)
 			// i++;
 			;
 		}
+		printf("source is %c\n",source[i]);
 		for(int j=0;j<i;j++)
 		{
-			t[j]=*(source+j);
+			t[j]=source[j];
 		}
 		for(int j=i+1;source[j];j++)
 		{
 			res[j-i-1]=source[j];
 		}
-		// printf("t is [%s]\n",t);
-		// printf("res is[%s]\n",res);
+		printf("t is [%s]\n",t);
+		printf("res is[%s]\n",res);
 		root=getdir(root,t);
+		printf("t is %s \n",t);
 		if(root ==NULL)
 		{
 			printf("file not found\n---------------------------------\n");
@@ -545,7 +553,7 @@ int deletefile(dirnode *root,char*source)
 
 int deletedir(dirnode *root,char*source)
 {
-	char *x=strchr(source,'/');
+	char *x=strrchr(source,'/');
 	char res[1000]={'\0'};
 	char t[1000]={'\0'};
 	if(x!=NULL)
@@ -655,46 +663,15 @@ void getresult(char *buf,char *path,char *result)
 	}
 	if(strncmp(buf,"upload",6)==0)
 	{
-		// printf("
-		// ls(cur,result);
+
 		char name[MAX]={'\0'};
 		long siz;
 		char upload[1000];
 		sscanf(buf,"%s %s %ld",upload,name,&siz);
-		// char 
-		// int i=0;
-		// while(buf[i]!=' ')
-			// i++;
-		// i++;
-		// int j=0;
-		// if(!buf[i])
-		// {				
-			// bzero(result,MAX);
-			// strcat(result,"wrong command\n");
-			// return ;
-		// }
-		// while(buf[i]!=' ')
-		// {
-			// name[j++]=buf[i++];
-		// }
-		// i++;
-		// printf("name is %s\n",name);
-		// char size[100]={'\0'};
-		// j=0;
-		// while(buf[i]!=' ')
-		// {
-			// size[j++]=buf[i++];
-		// }
-		
-		// long siz;
-		// char *ptr;
-		// siz = strtol(size, &ptr, 10);
+
 		printf("size is%ld\n",siz);
-		// char nam[10000]={'\0'};
-		// strcat(nam,name);
-		// printf("nam is %s\n",nam);
+
 		printf("name is %s\n",name);
-		// filenode *f=addfile(cur,nam,siz,1048576);
 		filenode *f=addfile(cur,name,siz,1048576);
 		printf("created file\n");
 		for(int i=0;i<noofds;i++)
@@ -723,7 +700,7 @@ void getresult(char *buf,char *path,char *result)
 		sscanf(buf,"%s %s",upload,name);
 		char *u=strchr(name,'/');
 		printf("unique name is %s\n",name);
-		if(u==NULL)
+		if(u==NULL&&cur!=root)
 		{
 			char z[MAX]={'\0'};
 			if(strcmp(cur->path,"/")!=0)
@@ -753,67 +730,6 @@ void getresult(char *buf,char *path,char *result)
 		printf("returning\n");
 		// return ;
 		return ;																		
-	}
-	if(strncmp(buf,"rm",2)==0)
-	{
-		// printf("
-		// ls(cur,result);
-		char name[MAX]={'\0'};
-		char upload[1000];
-		sscanf(buf,"%s %s",upload,name);
-
-		printf("name is %s\n",name);
-		int x=deletefile(root,name);
-		printf("created file\n");
-		// printfile(f);
-	
-		// printf("inside %s\n",result);
-		bzero(result,MAX);
-		if(x==0)
-		{
-			
-			strcat(result,"success\n");
-		}
-		else
-		{
-			strcat(result,"error deleting file\n");
-		}
-		// printinode(f,result);
-		printf("returning\n");
-		// return ;
-		return ;																		
-	}
-	
-	if(strncmp(buf,"mkdir",5)==0)
-	{
-		// printf(
-		char name[MAX]={'\0'};
-		int i=0;
-		while(buf[i]!=' ')
-			i++;
-		i++;
-		int j=0;
-		if(!buf[i])
-		{				
-			bzero(result,MAX);
-			strcat(result,"wrong command\n");
-			return ;
-		}
-		while(buf[i])
-		{
-			name[j++]=buf[i++];
-		}
-		dirnode *new=adddir(cur,name);
-		if(new==NULL)
-		{
-			bzero(result,MAX);
-			strcat(result,"not found\n");
-			return ;
-		}
-		bzero(result,MAX);
-		strcat(result,"successfull\n");
-		return ;
-																	
 	}
 	if(strncmp(buf,"rmdir",5)==0)
 	{
@@ -867,6 +783,183 @@ void getresult(char *buf,char *path,char *result)
 		return ;
 																	
 	}
+
+	if(strncmp(buf,"rm",2)==0)
+	{
+		// printf("
+		// ls(cur,result);
+		char name[MAX]={'\0'};
+		char upload[1000];
+		sscanf(buf,"%s %s",upload,name);
+		char *u=strchr(name,'/');
+		printf("unique name is %s\n",name);
+		if(u==NULL&&cur!=root)
+		{
+			char z[MAX]={'\0'};
+			if(strcmp(cur->path,"/")!=0)
+				strcat(z,cur->path);
+			strcat(z,"/");
+			strcat(z,cur->name);
+			strcat(z,"/");
+			strcat(z,name);
+			bzero(name,MAX);
+			strcpy(name,z);
+		}
+		printf("name is %s\n",name);
+		int x=deletefile(root,name);
+		printf("created file\n");
+		// printfile(f);
+	
+		// printf("inside %s\n",result);
+		bzero(result,MAX);
+		if(x==0)
+		{
+			
+			strcat(result,"success\n");
+		}
+		else
+		{
+			strcat(result,"error deleting file\n");
+		}
+		// printinode(f,result);
+		printf("returning\n");
+		// return ;
+		return ;																		
+	}
+	if(strncmp(buf,"cp",2)==0)
+	{
+		// printf("
+		// ls(cur,result);
+		char name[MAX]={'\0'};
+		char upload[1000];
+		char pa[MAX]={'\0'};
+		sscanf(buf,"%s %s %s",upload,name,pa);
+		char *u=strchr(name,'/');
+		printf("unique name is %s\n",name);
+		if(u==NULL&&cur!=root)
+		{
+			char z[MAX]={'\0'};
+			if(strcmp(cur->path,"/")!=0)
+				strcat(z,cur->path);
+			strcat(z,"/");
+			strcat(z,cur->name);
+			strcat(z,"/");
+			strcat(z,name);
+			bzero(name,MAX);
+			strcpy(name,z);
+		}
+		printf("name is %s\n",name);
+		u=strchr(pa,'/');
+		printf("unique name is %s\n",name);
+		if(u==NULL&&cur!=root)
+		{
+			char z[MAX]={'\0'};
+			if(strcmp(cur->path,"/")!=0)
+				strcat(z,cur->path);
+			strcat(z,"/");
+			strcat(z,cur->name);
+			strcat(z,"/");
+			strcat(z,pa);
+			bzero(pa,MAX);
+			strcpy(pa,z);
+		}
+		int x=copyfile(root,name,pa);
+		// printf("created file\n");
+		// printfile(f);
+	
+		// printf("inside %s\n",result);
+		bzero(result,MAX);
+		if(x==0)
+		{
+			
+			strcat(result,"success\n");
+		}
+		else
+		{
+			strcat(result,"error copying file\n");
+		}
+		// printinode(f,result);
+		printf("returning\n");
+		// return ;
+		return ;																		
+	}
+	if(strncmp(buf,"mv",2)==0)
+	{
+		// printf("
+		// ls(cur,result);
+		char name[MAX]={'\0'};
+		char upload[1000];
+		char pa[MAX]={'\0'};
+		sscanf(buf,"%s %s %s",upload,name,pa);
+		char *u=strchr(name,'/');
+		printf("unique name is %s\n",name);
+		if(u==NULL&&cur!=root)
+		{
+			char z[MAX]={'\0'};
+			if(strcmp(cur->path,"/")!=0)
+				strcat(z,cur->path);
+			strcat(z,"/");
+			strcat(z,cur->name);
+			strcat(z,"/");
+			strcat(z,name);
+			bzero(name,MAX);
+			strcpy(name,z);
+		}
+		printf("name is %s\n",name);
+		u=strchr(pa,'/');
+		printf("unique name is %s\n",name);
+		if(u==NULL&&cur!=root)
+		{
+			char z[MAX]={'\0'};
+			if(strcmp(cur->path,"/")!=0)
+				strcat(z,cur->path);
+			strcat(z,"/");
+			strcat(z,cur->name);
+			strcat(z,"/");
+			strcat(z,pa);
+			bzero(pa,MAX);
+			strcpy(pa,z);
+		}
+		int x=copyfile(root,name,pa);
+		// printf("created file\n");
+		// printfile(f);
+	
+		// printf("inside %s\n",result);
+		bzero(result,MAX);
+		if(x==0)
+		{
+			x=deletefile(root,name);
+			if(x==0)
+				strcat(result,"success\n");
+			else
+				strcat(result,"file copied but couldnt delete original file");
+		}
+		else
+		{
+			strcat(result,"error copying file\n");
+		}
+		// printinode(f,result);
+		printf("returning\n");
+		// return ;
+		return ;																		
+	}
+	if(strncmp(buf,"mkdir",5)==0)
+	{
+		// printf(
+		char name[MAX]={'\0'};
+		sscanf(buf,"mkdir %s",name);
+		dirnode *new=adddir(cur,name);
+		if(new==NULL)
+		{
+			bzero(result,MAX);
+			strcat(result,"not found\n");
+			return ;
+		}
+		bzero(result,MAX);
+		strcat(result,"successfull\n");
+		return ;
+																	
+	}
 	if(strncmp(buf,"cd",2)==0)
 	{
 		// printf("
@@ -911,13 +1004,14 @@ void getresult(char *buf,char *path,char *result)
 			printf("succesfull %s \n",cur->name);
 		}
 		bzero(path,MAX);
-		strcpy(path,cur->path);
+
 		if(cur!=root)
 		{
 			strcpy(path,cur->path);
-			strcat(path,"/");
 		}
-		strcpy(path,cur->name);
+		strcat(path,"/");
+		printf("current name is %s\n",cur->name);
+		strcat(path,cur->name);
 		bzero(result,MAX);
 		strcat(result,"succesfully changed inside: ");
 		strcat(result,path);

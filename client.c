@@ -26,7 +26,7 @@ int dsclient(char *ip,int port,char *buf)
 	buffer[strlen((buffer))-1]  = '\0';
 	// buffer[strlen((buffer))]  = '\0';
 
-	printf("1buffer %s \n",buffer);
+	// printf("1buffer %s \n",buffer);
 	char name[100]={'\0'};
 	int i=0,j=0;
 	while(buffer[i]!=' ')
@@ -72,7 +72,7 @@ int dsclient(char *ip,int port,char *buf)
 			printf("\nConnection Failed \n"); 
 			return -1; 
 		}
-		printf("command sent [%s]\n",buffer);
+		// printf("command sent [%s]\n",buffer);
 		write(sock,buffer,strlen(buffer));
 		// printf("buffer %s \n",buffer);
 		bzero(buffer,MAX);
@@ -82,7 +82,7 @@ int dsclient(char *ip,int port,char *buf)
 		int len = ftell(fp);
 		fseek(fp,0,SEEK_SET);
 		// int nooftimes=len/1000;
-		printf("no of times%d\n",len);
+		// printf("no of times%d\n",len);
 		char x[1000];
 		sprintf(x,"%d",len);
 		send(sock,x,strlen(x),0);
@@ -101,14 +101,14 @@ int dsclient(char *ip,int port,char *buf)
 			send(sock,&a,sizeof(a),0);
 									
 		}
-		printf("\n");
+		// printf("\n");
 		fclose(fp);
 		char cmd[1010]={'\0'};
 		sprintf(cmd,"rm %s",name);
 		system(cmd);
 		bzero(buffer,MAX);
 		recv(sock,buf,MAX,0);
-		printf("reached here\n");
+		printf("segment uploaded \n");
 		sleep(1);
 		close(sock);
 		exit(0);
@@ -129,7 +129,7 @@ int split(char *name,int times,int PSIZE,int *ino)
     {   
         bzero(PackData,1000);
         sprintf(PackData,"inode%d",ino[i]);
-        printf("split inode%d\n",ino[i]);
+        // printf("split inode%d\n",ino[i]);
         FILE *f2 = fopen(PackData,"wb");
         si = PSIZE;
         while(si--)
@@ -140,7 +140,7 @@ int split(char *name,int times,int PSIZE,int *ino)
 	{
 		bzero(PackData,1000);
 		sprintf(PackData,"inode%d",ino[i]);
-		printf("split inode%d\n",ino[i]);
+		// printf("split inode%d\n",ino[i]);
 		FILE *f2 = fopen(PackData,"wb");
 		si= len%PSIZE;
 			while(si--)
@@ -153,9 +153,9 @@ int split(char *name,int times,int PSIZE,int *ino)
 int upload(long k,char *nam,int *port,char ip[1000][100],int PSIZE,int *ino)
 {
     int times = k/PSIZE;
-	printf("size %ld\ntimes:%d\n ",k,times);
+	// printf("size %ld\ntimes:%d\n ",k,times);
 	split(nam,times,PSIZE,ino);
-	printf("size %ld\nntimes:%d \n",k,times);
+	// printf("size %ld\nntimes:%d \n",k,times);
 	if(k%PSIZE!=0)
 	{
 		times=times+1;
@@ -168,7 +168,7 @@ int upload(long k,char *nam,int *port,char ip[1000][100],int PSIZE,int *ino)
 			char cmd[1000]={'\0'};
 			sprintf(cmd,"write inode%d",ino[i]);
 			dsclient(ip[i],port[i],cmd);
-			printf("child %d closed\n",i);
+			// printf("child %d closed\n",i);
 			exit(0);
 		}
 		
@@ -180,7 +180,7 @@ int upload(long k,char *nam,int *port,char ip[1000][100],int PSIZE,int *ino)
 }
  int join(char *name,int times,int PSIZE,int l,int *ino)
 {
-	printf("hello\n");
+	printf("Download complete\n");
 	char PackData[1000]={'\0'};
 	sprintf(PackData,"%s%s","saved",name);
 	FILE *f1 = fopen(PackData,"wb");
@@ -190,7 +190,7 @@ int upload(long k,char *nam,int *port,char ip[1000][100],int PSIZE,int *ino)
     {
         bzero(PackData,1000);
         sprintf(PackData,"inode%d",ino[i]);
-        printf("using inode%d\n",ino[i]);
+        // printf("using inode%d\n",ino[i]);
         f2 = fopen(PackData,"rb");
         int k=PSIZE,l=0;
         while(k--)
@@ -208,7 +208,7 @@ int upload(long k,char *nam,int *port,char ip[1000][100],int PSIZE,int *ino)
 	{
         bzero(PackData,1000);
         sprintf(PackData,"inode%d",ino[i]);
-        printf(	"inode%d\n",ino[i]);
+        // printf(	"inode%d\n",ino[i]);
         f2 = fopen(PackData,"rb");
 		    fseek(f2,0,SEEK_END);
 	
@@ -239,7 +239,7 @@ int upload(long k,char *nam,int *port,char ip[1000][100],int PSIZE,int *ino)
 	buffer[strlen((buffer))-1]  = '\0';
 	// buffer[strlen((buffer))]  = '\0';
 
-	printf("1buffer %s \n",buffer);
+	// printf("1buffer %s \n",buffer);
 	char name[100]={'\0'};
 	int i=0,j=0;
 	while(buffer[i]!=' ')
@@ -285,7 +285,7 @@ int upload(long k,char *nam,int *port,char ip[1000][100],int PSIZE,int *ino)
 			printf("\nConnection Failed \n"); 
 			return -1; 
 		}
-		printf("command sent [%s]\n",buffer);
+		// printf("command sent [%s]\n",buffer);
 		write(sock,buffer,strlen(buffer));
 		// printf("buffer %s \n",buffer);
 		bzero(buffer,MAX);
@@ -311,7 +311,7 @@ int upload(long k,char *nam,int *port,char ip[1000][100],int PSIZE,int *ino)
 
 		bzero(buffer,MAX);
 		recv(sock,buffer,MAX,0);
-		printf("reached here\n");
+		printf("segment downloaded\n");
 		sleep(1);
 		close(sock);
 		exit(0);
@@ -322,9 +322,9 @@ int download(long k,char *nam,int *port,char ip[1000][100],int PSIZE,int *ino)
 
 
     int times = k/PSIZE;
-	printf("size %ld\ntimes:%d\n ",k,times);
+	// printf("size %ld\ntimes:%d\n ",k,times);
 	// split(argv[2],times,PSIZE);
-	printf("size %ld\nntimes:%d \n",k,times);
+	// printf("size %ld\nntimes:%d \n",k,times);
 	
 	if(k%PSIZE!=0)
 	{
@@ -338,7 +338,7 @@ int download(long k,char *nam,int *port,char ip[1000][100],int PSIZE,int *ino)
 			char cmd[1000];
 			sprintf(cmd,"read inode%d",ino[i]);
 			drclient(ip[i],port[i],cmd);
-			printf("child %d closed\n",i);
+			// printf("child %d closed\n",i);
 			exit(0);
 		}
 		
@@ -346,7 +346,7 @@ int download(long k,char *nam,int *port,char ip[1000][100],int PSIZE,int *ino)
 	for(int i=0;i<times;i++)
 	wait(NULL);
 	// exit(0);
-	printf("done recieveing merging\n");
+	// printf("done recieveing merging\n");
 	join(nam,k/PSIZE,PSIZE,k,ino);
 	return 0;
 }
@@ -354,6 +354,7 @@ int download(long k,char *nam,int *port,char ip[1000][100],int PSIZE,int *ino)
 int convertToInt(char*);
 int main(int argc, char const *argv[]) 
 { 
+	int set=0;
     int portNo = 0;
     char buffer[MAX] = {'\0'};
     // printf("please Enter port No of Server\n");
@@ -403,7 +404,7 @@ int main(int argc, char const *argv[])
 			{
 				char name[100];
 				sscanf(buffer,"upload %s",name);
-				printf("name is%s\n",name);
+				// printf("name is%s\n",name);
 				char *x=strchr(buffer,'\n');
 				*x='\0';
 				FILE *fp = fopen(name,"rb");
@@ -415,7 +416,17 @@ int main(int argc, char const *argv[])
 				char str[1000];
 				sprintf(str," %ld\n",k);
 				strcat(buffer,str);
-				printf("buffer is:[%s]\n",buffer);	
+				// printf("buffer is:[%s]\n",buffer);	
+			}
+			if(strncmp(buffer,"cat",3)==0)
+			{
+				char name[100];
+				// buf[MAX]={'\0'};
+				sscanf(buffer,"cat %s",name);
+				// printf("name is%s\n",name);
+				bzero(buffer,MAX);
+				sprintf(buffer,"download %s\n",name);
+				set=1;
 			}
             write(sock,buffer,strlen(buffer)-1);
             
@@ -427,21 +438,21 @@ int main(int argc, char const *argv[])
 				int port[1000]={'\0'};
 				char ip[1000][100];
 				int ino[1000];
-				printf("buffer%s\n",buffer);
+				// printf("buffer%s\n",buffer);
 				char name[100];
 				sscanf(buffer,"upload %s",name);
 				bzero(buffer,MAX);
 				valread = read(sock,buffer,sizeof(buffer));
 				char xno[100]={'\0'};
 				int i=0,j=0;
-				printf("buffer %s\n",buffer);
+				// printf("buffer %s\n",buffer);
 			
 				while(buffer[i]!=' ')
 				{
 					xno[j++]=buffer[i++];
 				}
 				i++;
-				printf("x no is %s \n",xno);
+				printf("please wait while uploading \nno of segment is %s \n",xno);
 				int n=atoi(xno);
 				bzero(xno,100);
 				j=0;
@@ -452,7 +463,7 @@ int main(int argc, char const *argv[])
 				i++;
 				// printf("size is %d\n",size);
 				int size=atoi(xno);
-				printf("size is %d\n",size);
+				// printf("size is %d\n",size);
 				for(int k=0;k<n;k++)
 				{
 					j=0;
@@ -465,7 +476,7 @@ int main(int argc, char const *argv[])
 						p[j++]=buffer[i++];
 					}
 					i++;
-					printf("ino [%s]\n",p);
+					// printf("ino [%s]\n",p);
 					ino[k]=atoi(p);
 					bzero(p,100);
 					j=0;
@@ -475,21 +486,21 @@ int main(int argc, char const *argv[])
 					bzero(ip[k],100);
 
 					strcpy(ip[k],p);
-										printf("ip from p is %s \n ",p);
-										printf("ip is %s \n ",ip[k]);
+										// printf("ip from p is %s \n ",p);
+										// printf("ip is %s \n ",ip[k]);
 					j=0;
 					bzero(p,100);
 					while(buffer[i]!='|')
 						p[j++]=buffer[i++];
 					port[k]=atoi(p);
 
-					printf("port no with p is [%s] \n",p);
-					printf("port no is [%d] \n",port[k]);
+					// printf("port no with p is [%s] \n",p);
+					// printf("port no is [%d] \n",port[k]);
 					bzero(p,100);
 					j=0;
 					
 					// i++;
-					printf("ino [%d] port no [%d] ip [%s]\n",ino[k],port[k],ip[k]);
+					// printf("ino [%d] port no [%d] ip [%s]\n",ino[k],port[k],ip[k]);
 				}
 										int PSIZE = 1048576;
 						upload(size,name,port,ip,PSIZE,ino);
@@ -501,22 +512,22 @@ int main(int argc, char const *argv[])
 					int port[1000]={'\0'};
 					char ip[1000][100];
 					int ino[1000];
-					printf("buffer%s\n",buffer);
+					// printf("buffer%s\n",buffer);
 					char name[100];
 					sscanf(buffer,"download %s",name);
-					printf("-------------\n name is [%s]",name);
+					// printf("-------------\n name is [%s]",name);
 					bzero(buffer,MAX);
 					valread = read(sock,buffer,sizeof(buffer));
 					char xno[100]={'\0'};
 					int i=0,j=0;
-					printf("buffer %s\n",buffer);
+					// printf("buffer %s\n",buffer);
 				
 					while(buffer[i]!=' ')
 					{
 						xno[j++]=buffer[i++];
 					}
 					i++;
-					printf("x no is %s \n",xno);
+					printf("please wait while downloading \n no of segment  is %s \n",xno);
 					int n=atoi(xno);
 					bzero(xno,100);
 					j=0;
@@ -527,7 +538,7 @@ int main(int argc, char const *argv[])
 					i++;
 					// printf("size is %d\n",size);
 					int size=atoi(xno);
-					printf("size is %d\n",size);
+					// printf("size is %d\n",size);
 					for(int k=0;k<n;k++)
 					{
 						j=0;
@@ -540,7 +551,7 @@ int main(int argc, char const *argv[])
 							p[j++]=buffer[i++];
 						}
 						i++;
-						printf("ino [%s]\n",p);
+						// printf("ino [%s]\n",p);
 						ino[k]=atoi(p);
 						bzero(p,100);
 						j=0;
@@ -550,25 +561,38 @@ int main(int argc, char const *argv[])
 						bzero(ip[k],100);
 
 						strcpy(ip[k],p);
-											printf("ip from p is %s \n ",p);
-											printf("ip is %s \n ",ip[k]);
+											// printf("ip from p is %s \n ",p);
+											// printf("ip is %s \n ",ip[k]);
 						j=0;
 						bzero(p,100);
 						while(buffer[i]!='|')
 							p[j++]=buffer[i++];
 						port[k]=atoi(p);
 
-						printf("port no with p is [%s] \n",p);
-						printf("port no is [%d] \n",port[k]);
+						// printf("port no with p is [%s] \n",p);
+						// printf("port no is [%d] \n",port[k]);
 						bzero(p,100);
 						j=0;
 						
 						// i++;
-						printf("ino [%d] port no [%d] ip [%s]\n",ino[k],port[k],ip[k]);
+						// printf("ino [%d] port no [%d] ip [%s]\n",ino[k],port[k],ip[k]);
 					}
 					int PSIZE = 1048576;
-					printf("name is %s\n",name);
+					// printf("name is %s\n",name);
 					download(size,name,port,ip,PSIZE,ino);
+					if(set==1)
+					{
+						char np[1000]={'\0'};
+						sprintf(np,"saved%s",name);
+						// printf("np is %s \n",np);
+						FILE *fdp=fopen(np,"rb");
+						while(!feof(fdp))
+						{
+							printf("%c",getc(fdp));
+						}
+						printf("\n");
+						set=0;
+					}
 				}
 				else
 				{
@@ -582,7 +606,7 @@ int main(int argc, char const *argv[])
 						break;
 					}
 					buffer[valread] = '\0'; 
-					printf("buffer :%s",buffer);
+					printf("\n%s",buffer);
 				}
 			}
         }
