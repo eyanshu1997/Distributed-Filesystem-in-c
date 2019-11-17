@@ -450,6 +450,67 @@ int copyfile(dirnode *root,char *source,char *destination)
 		return 1;
 	}
 	dirnode *dest=getdir(root,destination);
+	char *x=strrchr(destination,'/');
+	if(dest==NULL)
+	{
+		printf("hrerere\n");
+		char d[10000]={'\0'};
+		char newname[1000]={'\0'};
+		if(x!=NULL)
+		{
+			int i=0;
+			for(i=0;(destination+i)!=(x);i++)
+				d[i]=destination[i];
+			i++;
+			for(int j=0;destination[i];j++)
+				newname[j]=destination[i++];
+			dest=getdir(root,d);
+		}
+		else
+		{
+			strcpy(newname,destination);
+			dest=root;
+		}
+		if(dest==NULL)
+		{	
+			printf("error in copy\n");
+			printf("culdnt find dest\n---------------------------------\n");
+			return 1;
+		}
+		
+		filenode *new = (filenode *)malloc(sizeof(filenode));
+		new->size=src->size;
+		new->noofcopies=0;
+		new->ninodes=src->ninodes;
+		strcpy(new->name,newname);
+		printf("adding origi name [%s]\n",newname);
+		printf("adding name [%s]\n",new->name);
+		printf("adding nodes [%ld]\n",new->ninodes);
+	
+		// new->size=src->size;
+		
+		// new->noofcopies=0;
+		new->inodes=(inode **)malloc(new->ninodes*sizeof(inode *));
+
+		for(int i=0;i<new->ninodes;i++)
+		{
+			printf("herer ino %d %d \n",i,src->inodes[i]->dsno);
+
+
+			new->inodes[i]=(inode *)malloc(sizeof(inode));
+			new->inodes[i]->dsno=src->inodes[i]->dsno;
+			new->inodes[i]->ino=src->inodes[i]->ino;
+			new->inodes[i]->size=src->inodes[i]->size;
+			new->inodes[i]->gino=src->inodes[i]->gino;
+			printf("done\n");
+		}
+		printf("reached here\n");
+		dest->flist[dest->nfile]=new;
+		(dest->nfile)++;
+		return 0;
+		// printf("no of nodes %ld\n",n);
+	}
+
 	if(dest==NULL)
 	{	
 		printf("error in copy\n");
