@@ -583,10 +583,6 @@ int deletefile(dirnode *root,char*source)
 				{
 					(root->flist[i]->noofcopies)--;
 				}
-				else
-				{
-					free(root->flist[i]);
-				}
 			}
 			
 		}

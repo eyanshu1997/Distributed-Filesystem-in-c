@@ -16,10 +16,9 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 	int portNo = convertToInt(argv[1]);
-	//master file descriptor list 
+
 	fd_set master;
 
-	//temp file descriptor list for select()
 	fd_set read_fds;
 
 	struct sockaddr_in serveraddr,clientaddr;
