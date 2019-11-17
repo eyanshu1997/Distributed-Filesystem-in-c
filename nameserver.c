@@ -45,7 +45,7 @@ int deletedir(dirnode *root,char*source); //deletedir from path
 int convertToInt(char*);
 
 int noofds=3;
-char *ip[1000];
+char ip[1000][100];
 int port[1000];
 struct node3
 {
@@ -357,24 +357,41 @@ inode **createinode(long size,long segsize,long n)
 }
 filenode *addfile(dirnode *dir,char *nam,long size,long segsize)
 {
-	filenode *new = (filenode *)malloc(sizeof(filenode));
-	new->size=size;
-	new->noofcopies=0;
+	int set=0;
+	filenode *new;
+	for(int i=0;i<dir->nfile;i++)
+	{
+		if(strcmp(dir->flist[i]->name,nam)==0)
+		{
+			set=1;
+		}
+	}
+	if(set==0)
+	{
+		new = (filenode *)malloc(sizeof(filenode));
+		new->size=size;
+		new->noofcopies=0;
 
-	strcpy(new->name,nam);
-	printf("adding origi name [%s]\n",nam);
-	printf("adding name [%s]\n",new->name);
-	long n;
-	if(size%segsize==0)
-		n=size/segsize;
+		strcpy(new->name,nam);
+		printf("adding origi name [%s]\n",nam);
+		printf("adding name [%s]\n",new->name);
+		long n;
+		if(size%segsize==0)
+			n=size/segsize;
+		else
+			n=(size/segsize)+1;
+		new->ninodes=n;
+		new->inodes= createinode(size,segsize,n);
+		dir->flist[dir->nfile]=new;
+		(dir->nfile)++;
+		printf("no of nodes %ld\n",n);
+	}
 	else
-		n=(size/segsize)+1;
-	new->ninodes=n;
-	new->inodes= createinode(size,segsize,n);
-	dir->flist[dir->nfile]=new;
-	(dir->nfile)++;
-	printf("no of nodes %ld\n",n);
+	{
+		new=NULL;
+	}
 	return new;
+	
 }
 
 dirnode *createroot()
@@ -680,12 +697,19 @@ void getresult(char *buf,char *path,char *result)
 		// filenode *f=addfile(cur,nam,siz,1048576);
 		filenode *f=addfile(cur,name,siz,1048576);
 		printf("created file\n");
-		printfile(f);
-	
+		for(int i=0;i<noofds;i++)
+			printf("ip [%s]  port no [%d] \n ",ip[i],port[i]);
+		// printf("
 		// printf("inside %s\n",result);
 		bzero(result,MAX);
 		// strcat(result,"suc\n");
-		printinode(f,result);
+		if(f!=NULL)
+		{
+				printfile(f);	
+			printinode(f,result);
+		}
+		else
+			strcat(result,"error creating file maybe already exits\n");
 		printf("returning\n");
 		// return ;
 		return ;																		
@@ -697,16 +721,35 @@ void getresult(char *buf,char *path,char *result)
 		char name[MAX]={'\0'};
 		char upload[1000];
 		sscanf(buf,"%s %s",upload,name);
-
+		char *u=strchr(name,'/');
+		printf("unique name is %s\n",name);
+		if(u==NULL)
+		{
+			char z[MAX]={'\0'};
+			if(strcmp(cur->path,"/")!=0)
+				strcat(z,cur->path);
+			strcat(z,"/");
+			strcat(z,cur->name);
+			strcat(z,"/");
+			strcat(z,name);
+			bzero(name,MAX);
+			strcpy(name,z);
+		}
 		printf("name is %s\n",name);
+
 		filenode *f=getfile(root,name);
 		printf("created file\n");
-		printfile(f);
+		// printfile(f);
 	
 		// printf("inside %s\n",result);
 		bzero(result,MAX);
 		// strcat(result,"suc\n");
-		printinode(f,result);
+		if(f!=NULL)
+			printinode(f,result);
+		else
+		{
+			strcat(result,"errror getting file\n");
+		}
 		printf("returning\n");
 		// return ;
 		return ;																		
@@ -720,13 +763,21 @@ void getresult(char *buf,char *path,char *result)
 		sscanf(buf,"%s %s",upload,name);
 
 		printf("name is %s\n",name);
-		deletefile(root,name);
+		int x=deletefile(root,name);
 		printf("created file\n");
 		// printfile(f);
 	
 		// printf("inside %s\n",result);
 		bzero(result,MAX);
-		strcat(result,"suc\n");
+		if(x==0)
+		{
+			
+			strcat(result,"success\n");
+		}
+		else
+		{
+			strcat(result,"error deleting file\n");
+		}
 		// printinode(f,result);
 		printf("returning\n");
 		// return ;
@@ -881,11 +932,23 @@ void getresult(char *buf,char *path,char *result)
 
 int main(int argc, char *argv[])
 {
-	if(argc!=2){
-		printf("Oops Please give Server port no as Command Line Argument\n");
+	if(((argc-1)%2)!=0&&argc!=1)
+	{
+		printf(" c is %d\n",argc);
+		printf("Oops Please give Name Server port no as Command Line Argument fllowed by no of data server then ip and port no of all  for eg ./ns 8080 3 127.0.0.1 8081 127.0.0.1 8082 127.0.0.1 8083 \n");
 		exit(1);
 	}
 	int portNo = convertToInt(argv[1]);
+	noofds=atoi(argv[2]);
+	printf("noof ds is %d \n",noofds);
+	int j=0;
+	for (int i=3;i<argc;i++)
+	{
+		strcpy(ip[j],argv[i++]);
+		port[j++]=atoi(argv[i]);
+		printf("ip of %d : %s \n port no of %d : %d\n",i,ip[i],i,port[i]);
+	}
+	// for(int i=0;i<
 	//master file descriptor list 
 	fd_set master;
 
@@ -902,13 +965,14 @@ int main(int argc, char *argv[])
 	int newfd;
 	int bytes_read;
 	int addrlen = 5;
-	int i, j;
-	port[0]=8080;
-	port[1]=8081;
-	port[2]=8082;
-	ip[0]="127.0.0.1";
-	ip[1]="127.0.0.1";
-	ip[2]="127.0.0.1";
+	int i;
+	j=0;
+	// port[0]=8080;
+	// port[1]=8081;
+	// port[2]=8082;
+	// ip[0]="127.0.0.1";
+	// ip[1]="127.0.0.1";
+	// ip[2]="127.0.0.1";
 	//clearing the master and read_fds set
 
 	FD_ZERO(&master);
