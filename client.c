@@ -87,7 +87,7 @@ int dsclient(char *ip,int port,char *buf)
 		sprintf(x,"%d",len);
 		send(sock,x,strlen(x),0);
 		// printf("sedinfig");
-		while(len--)
+		while(len>0)
 		{
 			bzero(buffer,MAX);
 			recv(sock,buffer,4,0);
@@ -95,11 +95,12 @@ int dsclient(char *ip,int port,char *buf)
 			// if(len%10000==0)
 			// printf(".");
 			fflush(stdout);
-			unsigned char a='\0';
+			unsigned char a[10000]={'\0'};
 			j=0;
-			a=fgetc(fp);
-			send(sock,&a,sizeof(a),0);
-									
+			// a=fgetc(fp);
+			fread(a,10000,1,fp);
+			send(sock,a,sizeof(a),0);
+			len=len-10000;				
 		}
 		// printf("\n");
 		fclose(fp);
@@ -296,15 +297,17 @@ int upload(long k,char *nam,int *port,char ip[1000][100],int PSIZE,int *ino)
 		// printf("sedinfig");
 		int n=0;
 		int no=0;	
-		while(len--)
+		while(len>0)
 		{
-			unsigned char a='\0';
-			n=recv(sock,&a,sizeof(a),0);
-			fputc(a,fp);
+			unsigned char a[10000]={'\0'};
+			n=recv(sock,a,sizeof(a),0);
+			// fputc(a,fp);
+			fwrite(a,10000,1,fp);
 			no=n+no;
 										
 			send(sock,"done",4,0);
 			bzero(buffer,MAX);				
+			len=len-10000;
 		}
 		printf("\n");
 		fclose(fp);
@@ -354,6 +357,11 @@ int download(long k,char *nam,int *port,char ip[1000][100],int PSIZE,int *ino)
 int convertToInt(char*);
 int main(int argc, char const *argv[]) 
 { 
+if(argc!=3)
+{
+	printf("enter the name server ip and port no as argument"); 
+	exit(0);
+}
 	int set=0;
     int portNo = 0;
     char buffer[MAX] = {'\0'};
@@ -376,8 +384,8 @@ int main(int argc, char const *argv[])
 	} 
 
 	serv_addr.sin_family = AF_INET; 
-    serv_addr.sin_addr.s_addr = inet_addr("127.0.0.2");
-	serv_addr.sin_port = htons(atoi(argv[1])); 
+    serv_addr.sin_addr.s_addr = inet_addr(argv[1]);
+	serv_addr.sin_port = htons(atoi(argv[2])); 
 	
 	
    
@@ -403,7 +411,7 @@ int main(int argc, char const *argv[])
 		    buffer[strlen((buffer))]  = '\0';
 			if(strncmp(buffer,"upload",6)==0)
 			{
-				char name[100];
+				char name[100]={'\0'};
 				sscanf(buffer,"upload %s",name);
 				// printf("name is%s\n",name);
 				char *x=strchr(buffer,'\n');
@@ -430,8 +438,14 @@ int main(int argc, char const *argv[])
 					{		
 						if(strcmp(de->d_name,".")!=0&&strcmp(de->d_name,"..")!=0&&de->d_type==DT_REG)
 						{
-							printf("uploading file%s\n", de->d_name); 
+							printf("uploading file %s\n", de->d_name);
+							chdir(name);
+							// char x[10000]={'\0'};
+							// sprintf(x,"%s/%s",name,de->d_name);
+							// printf("file [%s]\n",x);
 							FILE *fp = fopen(de->d_name,"rb");
+							if(fp==NULL)
+								printf("error in file opening \n ");
 							int PSIZE = 1048576;
 							fseek(fp,0,SEEK_END);
 							long k =ftell(fp);
@@ -441,7 +455,7 @@ int main(int argc, char const *argv[])
 							sprintf(str," %ld\n",k);
 							bzero(buffer,MAX);
 							sprintf(buffer,"upload %s %ld\n",de->d_name,k);
-							// printf("buffer %s\n",buffer);
+							printf("buffer %s\n",buffer);
 							write(sock,buffer,strlen(buffer)-1);
 							int port[1000]={'\0'};
 							char ip[1000][100];
@@ -515,6 +529,7 @@ int main(int argc, char const *argv[])
 						}
 					}
 					closedir(dr);     
+					chdir("..");
 				}								
 				else
 				{

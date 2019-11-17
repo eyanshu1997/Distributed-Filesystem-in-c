@@ -1002,7 +1002,7 @@ void getresult(char *buf,char *path,char *result)
 	}
 	if(strncmp(buf,"mkdir",5)==0)
 	{
-		// printf(
+		printf("name is %s\n",name);
 		char name[MAX]={'\0'};
 		sscanf(buf,"mkdir %s",name);
 		dirnode *new=adddir(cur,name);
