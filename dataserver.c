@@ -181,7 +181,8 @@ int main(int argc, char *argv[])
 								printf("no of times:[%d]\n",nooftime);
 								// printf("sending");
 								// int no=0;
-								while(nooftime>0)
+								int loop=nooftime;
+								while(nooftime>=10000)
 								{
 									unsigned char a[10000]={'\0'};
 									send(i,"done",4,0);
@@ -195,6 +196,21 @@ int main(int argc, char *argv[])
 									fwrite(a,10000,1,fp);
 									// no=n+no;
 									nooftime=nooftime-10000;
+								}
+								if(loop%10000!=0)
+								{
+									unsigned char a[10000]={'\0'};
+									send(i,"done",4,0);
+									// if(nooftime%10000==0)
+									// printf(".");
+									fflush(stdout);
+									n=recv(i,a,loop%10000,0);
+									// printf("result recieved[%s]\n",buf);
+									// printf("n is %ld\n",strlen(buf));
+									// fputc(a,fp);
+									fwrite(a,loop%10000,1,fp);
+									// no=n+no;
+									// nooftime=nooftime-10000;
 								}
 								fclose(fp);
 								// printf("n %d",no);
@@ -261,7 +277,8 @@ int main(int argc, char *argv[])
 									int n=recv(i,buf,sizeof(buf),0);
 									// printf("sending");
 									int no=0;
-									while(len>0)
+									int loop=len;
+									while(len>=10000)
 									{
 										unsigned char a[10000]={'\0'};
 										j=0;
@@ -272,6 +289,17 @@ int main(int argc, char *argv[])
 										recv(i,buf,4,0);
 										bzero(buf,sizeof(buf));
 										len=len-10000;
+									}
+									if(loop%10000!=0)
+									{
+										unsigned char a[10000]={'\0'};
+										j=0;
+										// a=fgetc(fp);
+										fread(a,loop%10000,1,fp);
+										send(i,a,loop%10000,0);
+										bzero(buf,MAX);
+										recv(i,buf,4,0);
+										bzero(buf,sizeof(buf));
 									}
 									fclose(fp);
 									// char cmd[1010]={'\0'};

@@ -87,14 +87,15 @@ int dsclient(char *ip,int port,char *buf)
 		sprintf(x,"%d",len);
 		send(sock,x,strlen(x),0);
 		// printf("sedinfig");
-		while(len>0)
+		int loop=len;
+		while(len>=10000)
 		{
 			bzero(buffer,MAX);
 			recv(sock,buffer,4,0);
 			bzero(buffer,sizeof(buffer));
 			// if(len%10000==0)
 			// printf(".");
-			fflush(stdout);
+			// fflush(stdout);
 			unsigned char a[10000]={'\0'};
 			j=0;
 			// a=fgetc(fp);
@@ -102,6 +103,21 @@ int dsclient(char *ip,int port,char *buf)
 			send(sock,a,sizeof(a),0);
 			len=len-10000;				
 		}
+		if(loop%10000!=0)
+		{
+			bzero(buffer,MAX);
+			recv(sock,buffer,4,0);
+			bzero(buffer,sizeof(buffer));
+			// if(len%10000==0)
+			// printf(".");
+			// fflush(stdout);
+			unsigned char a[10000]={'\0'};
+			j=0;
+			// a=fgetc(fp);
+			fread(a,loop%10000,1,fp);
+			send(sock,a,loop%10000,0);
+		}
+		
 		// printf("\n");
 		fclose(fp);
 		char cmd[1010]={'\0'};
@@ -297,17 +313,29 @@ int upload(long k,char *nam,int *port,char ip[1000][100],int PSIZE,int *ino)
 		// printf("sedinfig");
 		int n=0;
 		int no=0;	
-		while(len>0)
+		int loop=len;
+		while(len>=10000)
 		{
 			unsigned char a[10000]={'\0'};
 			n=recv(sock,a,sizeof(a),0);
 			// fputc(a,fp);
 			fwrite(a,10000,1,fp);
 			no=n+no;
-										
+			printf("n is %d\n",n);			
 			send(sock,"done",4,0);
 			bzero(buffer,MAX);				
 			len=len-10000;
+		}
+		if(loop%10000!=0)
+		{
+			unsigned char a[10000]={'\0'};
+			n=recv(sock,a,loop%10000,0);
+			// fputc(a,fp);
+			fwrite(a,loop%10000,1,fp);
+			no=n+no;
+			printf("n is %d\n",n);				
+			send(sock,"done",4,0);
+			bzero(buffer,MAX);
 		}
 		printf("\n");
 		fclose(fp);
@@ -530,20 +558,32 @@ if(argc!=3)
 					}
 					closedir(dr);     
 					chdir("..");
+					bzero(buffer,MAX);
+					sprintf(buffer,"cd ..\n");
+					// printf("buffer %s\n",buffer);
+					write(sock,buffer,strlen(buffer)-1);
+					bzero(buffer,MAX);
+					read(sock,buffer,sizeof(buffer));
 				}								
 				else
 				{
 					FILE *fp = fopen(name,"rb");
-					int PSIZE = 1048576;
-					fseek(fp,0,SEEK_END);
-					long k =ftell(fp);
-					fseek(fp,0,SEEK_SET);
-					fclose(fp);
-					char str[1000];
-					sprintf(str," %ld\n",k);
-					strcat(buffer,str);
-					printf("buffer is:[%s]\n",buffer);	
-					write(sock,buffer,strlen(buffer)-1);
+					if(fp==NULL)
+					{
+						printf("file not found");
+					}
+					else{
+						int PSIZE = 1048576;
+						fseek(fp,0,SEEK_END);
+						long k =ftell(fp);
+						fseek(fp,0,SEEK_SET);
+						fclose(fp);
+						char str[1000];
+						sprintf(str," %ld\n",k);
+						strcat(buffer,str);
+						printf("buffer is:[%s]\n",buffer);	
+						write(sock,buffer,strlen(buffer)-1);
+					}
 				}
 			}
 			else

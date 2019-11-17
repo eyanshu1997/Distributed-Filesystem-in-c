@@ -1002,7 +1002,7 @@ void getresult(char *buf,char *path,char *result)
 	}
 	if(strncmp(buf,"mkdir",5)==0)
 	{
-		printf("name is %s\n",name);
+		// printf("name is %s\n",name);
 		char name[MAX]={'\0'};
 		sscanf(buf,"mkdir %s",name);
 		dirnode *new=adddir(cur,name);
@@ -1083,9 +1083,9 @@ void getresult(char *buf,char *path,char *result)
 
 int main(int argc, char *argv[])
 {
-	if(((argc-1)%2)!=0&&argc!=1)
+	if(((argc-1)%2)!=0||argc==1||argc==3)
 	{
-		printf(" c is %d\n",argc);
+		// printf(" c is %d\n",argc);
 		printf("Oops Please give Name Server port no as Command Line Argument fllowed by no of data server then ip and port no of all  for eg ./ns 8080 3 127.0.0.1 8081 127.0.0.1 8082 127.0.0.1 8083 \n");
 		exit(1);
 	}
